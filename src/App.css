@@ -307,6 +307,11 @@ html,body{
 .fighter.facing-left .sprite{
   transform:translate(var(--sprite-x), var(--sprite-y)) scaleX(-1);
 }
+.fighter canvas.sprite-animated{
+  left:50%;
+  max-width:none;
+  image-rendering:pixelated;
+}
 .fighter .face{ display:none; }
 .debug-hitboxes .fighter{ outline:2px dashed rgba(255,255,255,.9); }
 .debug-hitbox{
