@@ -1,20 +1,20 @@
-import type { RefObject } from 'react'
 import move1 from '../assets/move1.png'
 import move2 from '../assets/move2.png'
 import move3 from '../assets/move3.png'
 
 type TitleScreenProps = {
   titleBackground: string
-  titleScreenRef: RefObject<HTMLDivElement | null>
+  visible: boolean
+  onStart: () => void
 }
 
-export function TitleScreen({ titleBackground, titleScreenRef }: TitleScreenProps) {
+export function TitleScreen({ titleBackground, visible, onStart }: TitleScreenProps) {
   return (
-    <div ref={titleScreenRef} id="title-screen" style={{ backgroundImage: `url(${titleBackground})` }}>
+    <div id="title-screen" className={visible ? '' : 'hidden'} style={{ backgroundImage: `url(${titleBackground})` }}>
       <div className="title-card">
         <div className="title-logo">
           <span className="t1">STREET</span>
-          <span className="t2">FIGHT&nbsp;PROTOTYPE</span>
+          <span className="t2">FIGHTER&nbsp;REMAKE</span>
         </div>
 
         <div className="moves-legend">
@@ -51,7 +51,7 @@ export function TitleScreen({ titleBackground, titleScreenRef }: TitleScreenProp
           </div>
         </div>
 
-        <div className="start-prompt">PRESS ENTER TO START</div>
+        <button className="start-prompt" type="button" onClick={onStart}>PRESS ENTER TO START</button>
       </div>
     </div>
   )

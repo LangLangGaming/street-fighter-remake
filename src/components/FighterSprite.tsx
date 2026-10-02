@@ -1,11 +1,11 @@
 import { useEffect, useRef, type RefObject } from 'react'
-import type { AnimationName, SpriteAnimation } from '../game/ryuAnimations'
+import type { CharacterAnimations } from '../game/ryuAnimations'
 
 type FighterSpriteProps = {
   fighterRef: RefObject<HTMLDivElement | null>
   id: 'p1' | 'p2'
   sprite?: string
-  animations?: Record<AnimationName, SpriteAnimation>
+  animations?: CharacterAnimations
   width: number
   height: number
   facing: 'left' | 'right'
@@ -32,15 +32,17 @@ export function FighterSprite({ fighterRef, id, sprite, animations, width, heigh
       }
     })
 
-    let currentAnimation: AnimationName | null = null
+    let currentAnimation: string | null = null
     let animationStartedAt = 0
     let animationFrame = 0
     let requestId = 0
     let lastDrawnFrame = ''
 
     const drawFrame = (now: number) => {
-      const requestedAnimation = fighter.dataset.animation as AnimationName | undefined
-      const animationName = requestedAnimation && animations[requestedAnimation] ? requestedAnimation : 'idle'
+      const requestedAnimation = fighter.dataset.animation
+      const animationName = requestedAnimation && animations[requestedAnimation]
+        ? requestedAnimation
+        : animations.idle ? 'idle' : Object.keys(animations)[0]
       const animation = animations[animationName]
 
       if (animationName !== currentAnimation) {
@@ -72,7 +74,8 @@ export function FighterSprite({ fighterRef, id, sprite, animations, width, heigh
 
       const isTurn = animationName.startsWith('turn-')
       const shouldFlip = !isTurn && fighter.classList.contains('facing-left')
-      canvas.style.transform = `translateX(-50%)${shouldFlip ? ' scaleX(-1)' : ''}`
+      const transform = `translateX(-50%)${shouldFlip ? ' scaleX(-1)' : ''}`
+      if (canvas.style.transform !== transform) canvas.style.transform = transform
       requestId = requestAnimationFrame(drawFrame)
     }
 
