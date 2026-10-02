@@ -11,20 +11,21 @@ export const MOVE_IMAGES = {
 export type MoveKey = keyof typeof MOVE_IMAGES
 
 export const PLAYER_1_SIZE = { width: 59, height: 93 }
-export const PLAYER_2_SIZE = { width: 100, height: 172 }
+export const PLAYER_2_SIZE = { width: 57, height: 98 }
 
 export const FLOOR_HEIGHT = 70
 export const MAX_HEALTH = 100
+export const PLAYER_1_SKILL_REACH_BONUS = 44
 
 export const MOVES = {
   move1: {
     damage: 6,
     reach: 26,
-    duration: 180,
-    activeFrom: 40,
-    activeTo: 100,
-    cooldown: 220,
-    knockback: 10,
+    duration: 250,
+    activeFrom: 85,
+    activeTo: 200,
+    cooldown: 340,
+    knockback: 16,
     launch: false,
   },
   move2: {

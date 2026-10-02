@@ -5,11 +5,11 @@ import { TitleScreen } from './components/TitleScreen'
 import move1 from './assets/move1.png'
 import move2 from './assets/move2.png'
 import move3 from './assets/move3.png'
-import player2Sprite from './assets/imnumber2.png'
 import titleBackground from './assets/title-bg.png'
 import { PLAYER_1_SIZE, PLAYER_2_SIZE } from './game/config'
+import { KEN_ANIMATIONS } from './game/kenAnimations'
 import { RYU_ANIMATIONS } from './game/ryuAnimations'
-import { useStreetFighterGame } from './hooks/useStreetFighterGame'
+import { useStreetFighterGame } from './hooks/useStreetFighterGame.ts'
 import './App.css'
 
 function App() {
@@ -85,7 +85,7 @@ function App() {
       </div>
 
       <FighterSprite fighterRef={p1Ref} id="p1" animations={RYU_ANIMATIONS} {...PLAYER_1_SIZE} facing="right" movePop={move1} />
-      <FighterSprite fighterRef={p2Ref} id="p2" sprite={player2Sprite} {...PLAYER_2_SIZE} facing="left" movePop={move1} />
+      <FighterSprite fighterRef={p2Ref} id="p2" animations={KEN_ANIMATIONS} {...PLAYER_2_SIZE} facing="left" movePop={move1} />
       <div ref={p1HitboxRef} className="debug-hitbox" aria-hidden="true" />
       <div ref={p2HitboxRef} className="debug-hitbox" aria-hidden="true" />
 

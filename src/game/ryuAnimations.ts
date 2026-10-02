@@ -1,4 +1,7 @@
 import idle from '../assets/ryu_idle.png'
+import move1 from '../assets/ryu_move1.png'
+import move2 from '../assets/ryu_move2.png'
+import move3 from '../assets/ryu_move3.png'
 import moveBackward from '../assets/ryu_movebackwards.png'
 import moveForward from '../assets/ryu_moveforwards.png'
 import turn from '../assets/ryu_turn.png'
@@ -33,6 +36,21 @@ export const RYU_ANIMATIONS = {
     { x: 111, y: 0, width: 63, height: 91 }, { x: 174, y: 0, width: 58, height: 91 },
     { x: 232, y: 0, width: 58, height: 91 }, { x: 290, y: 0, width: 50, height: 91 },
   ], fps: 10, loop: true },
+  'move1-attack': { src: move1, frames: [
+    { x: 0, y: 0, width: 56, height: 93 },
+    { x: 59, y: 0, width: 65, height: 93 },
+    { x: 135, y: 0, width: 66, height: 93 },
+  ], fps: 12, loop: false },
+  'move2-attack': { src: move2, frames: [
+    { x: 0, y: 0, width: 66, height: 113 },
+    { x: 66, y: 0, width: 86, height: 113 },
+    { x: 153, y: 0, width: 84, height: 113 },
+  ], fps: 9, loop: false },
+  'move3-attack': { src: move3, frames: [
+    { x: 0, y: 0, width: 60, height: 94 },
+    { x: 60, y: 0, width: 64, height: 94 },
+    { x: 124, y: 0, width: 114, height: 94 },
+  ], fps: 7, loop: false },
   'turn-to-left': { src: turn, frames: [
     { x: 109, y: 0, width: 54, height: 96 }, { x: 54, y: 0, width: 55, height: 96 },
     { x: 0, y: 0, width: 54, height: 96 },

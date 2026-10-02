@@ -49,6 +49,11 @@ export function FighterSprite({ fighterRef, id, sprite, animations, width, heigh
         currentAnimation = animationName
         animationStartedAt = now
         animationFrame = 0
+        lastDrawnFrame = ''
+        canvas.width = Math.max(...animation.frames.map(({ width: frameWidth }) => frameWidth))
+        canvas.height = Math.max(...animation.frames.map(({ height: frameHeight }) => frameHeight))
+        canvas.style.width = `${canvas.width}px`
+        canvas.style.height = `${canvas.height}px`
       }
 
       const elapsedFrames = Math.floor(((now - animationStartedAt) * animation.fps) / 1000)
@@ -60,15 +65,10 @@ export function FighterSprite({ fighterRef, id, sprite, animations, width, heigh
       const frameKey = `${animationName}:${animationFrame}:${frame.width}x${frame.height}`
 
       if (image?.complete && image.naturalWidth > 0 && frameKey !== lastDrawnFrame) {
-        if (canvas.width !== frame.width || canvas.height !== frame.height) {
-          canvas.width = frame.width
-          canvas.height = frame.height
-          canvas.style.width = `${frame.width}px`
-          canvas.style.height = `${frame.height}px`
-        }
-
-        context.clearRect(0, 0, frame.width, frame.height)
-        context.drawImage(image, frame.x, frame.y, frame.width, frame.height, 0, 0, frame.width, frame.height)
+        context.clearRect(0, 0, canvas.width, canvas.height)
+        const drawX = (canvas.width - frame.width) / 2
+        const drawY = canvas.height - frame.height
+        context.drawImage(image, frame.x, frame.y, frame.width, frame.height, drawX, drawY, frame.width, frame.height)
         lastDrawnFrame = frameKey
       }
 

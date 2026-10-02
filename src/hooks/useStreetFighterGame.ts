@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
-import { FLOOR_HEIGHT, MAX_HEALTH, MOVE_IMAGES, MOVES, PLAYER_1_SIZE, PLAYER_2_SIZE } from '../game/config'
+import { FLOOR_HEIGHT, MAX_HEALTH, MOVE_IMAGES, MOVES, PLAYER_1_SIZE, PLAYER_1_SKILL_REACH_BONUS, PLAYER_2_SIZE } from '../game/config'
 import type { Fighter } from '../game/types'
 
 type GameRefs = {
@@ -145,8 +145,11 @@ export function useStreetFighterGame(refs: GameRefs) {
     const debugHitboxes: Array<[Fighter, HTMLDivElement | null]> = [[p1, refs.p1HitboxRef.current], [p2, refs.p2HitboxRef.current]]
     // eslint-disable-next-line react-hooks/immutability
     el1.dataset.animation = 'idle'
+    el2.dataset.animation = 'idle'
     let p1TurnUntil = 0
     let p1TurnAnimation: string | null = null
+    let p2TurnUntil = 0
+    let p2TurnAnimation: string | null = null
     const keys: Record<string, boolean> = {}
     const justPressed: Record<string, boolean> = {}
     let animationId = 0
@@ -158,9 +161,10 @@ export function useStreetFighterGame(refs: GameRefs) {
     const bodyRect = (fighter: Fighter) => ({ left: fighter.x, right: fighter.x + fighter.width, bottom: fighter.y, top: fighter.y + fighter.height })
     const hitboxRect = (fighter: Fighter, move: (typeof MOVES)[keyof typeof MOVES]) => {
       const body = bodyRect(fighter)
+      const reach = move.reach + (fighter === p1 ? PLAYER_1_SKILL_REACH_BONUS : 0)
       return fighter.facing === 'right'
-        ? { left: body.right, right: body.right + move.reach, bottom: body.bottom, top: body.top }
-        : { left: body.left - move.reach, right: body.left, bottom: body.bottom, top: body.top }
+        ? { left: body.right, right: body.right + reach, bottom: body.bottom, top: body.top }
+        : { left: body.left - reach, right: body.left, bottom: body.bottom, top: body.top }
     }
     const overlaps = (a: ReturnType<typeof bodyRect>, b: ReturnType<typeof bodyRect>) =>
       a.left < b.right && a.right > b.left && a.bottom < b.top && a.top > b.bottom
@@ -195,7 +199,10 @@ export function useStreetFighterGame(refs: GameRefs) {
       p2.facing = 'left'
       p1TurnUntil = 0
       p1TurnAnimation = null
+      p2TurnUntil = 0
+      p2TurnAnimation = null
       el1.dataset.animation = 'idle'
+      el2.dataset.animation = 'idle'
     }
     const beginRound = () => {
       resetFighters()
@@ -301,6 +308,7 @@ export function useStreetFighterGame(refs: GameRefs) {
         }
       }
       let p1MovementDirection = 0
+      let p2MovementDirection = 0
       if (screenRef.current === 'title' && justPressed.Enter) {
         scoreRef.current = { player1: 0, player2: 0 }
         setScore(scoreRef.current)
@@ -322,8 +330,24 @@ export function useStreetFighterGame(refs: GameRefs) {
         if (justPressed.KeyF) tryAttack(p1, 'move1', now)
         if (justPressed.KeyG) tryAttack(p1, 'move2', now)
         if (justPressed.KeyH) tryAttack(p1, 'move3', now)
-        if (keys.ArrowLeft) { p2.x -= MOVE_SPEED; p2.facing = 'left' }
-        if (keys.ArrowRight) { p2.x += MOVE_SPEED; p2.facing = 'right' }
+        if (keys.ArrowLeft) {
+          p2.x -= MOVE_SPEED
+          p2MovementDirection -= 1
+          if (p2.facing !== 'left') {
+            p2.facing = 'left'
+            p2TurnAnimation = 'turn-to-left'
+            p2TurnUntil = now + 300
+          }
+        }
+        if (keys.ArrowRight) {
+          p2.x += MOVE_SPEED
+          p2MovementDirection += 1
+          if (p2.facing !== 'right') {
+            p2.facing = 'right'
+            p2TurnAnimation = 'turn-to-right'
+            p2TurnUntil = now + 300
+          }
+        }
         if (keys.ArrowUp || keys.ArrowDown) tryJump(p2)
         if (justPressed.Slash) tryAttack(p2, 'move1', now)
         if (justPressed.Quote) tryAttack(p2, 'move2', now)
@@ -360,13 +384,24 @@ export function useStreetFighterGame(refs: GameRefs) {
       }
       let playerAnimation = 'idle'
       if (screenRef.current === 'playing') {
-        if (now < p1TurnUntil && p1TurnAnimation) playerAnimation = p1TurnAnimation
+        if (p1.attacking && p1.activeMove) playerAnimation = `${p1.activeMove}-attack`
+        else if (now < p1TurnUntil && p1TurnAnimation) playerAnimation = p1TurnAnimation
         else if (p1MovementDirection !== 0) {
           const facingDirection = p1.facing === 'right' ? 1 : -1
           playerAnimation = p1MovementDirection === facingDirection ? 'move-forward' : 'move-backward'
         }
       }
       if (el1.dataset.animation !== playerAnimation) el1.dataset.animation = playerAnimation
+      let player2Animation = 'idle'
+      if (screenRef.current === 'playing') {
+        if (p2.attacking && p2.activeMove) player2Animation = `${p2.activeMove}-attack`
+        else if (now < p2TurnUntil && p2TurnAnimation) player2Animation = p2TurnAnimation
+        else if (p2MovementDirection !== 0) {
+          const facingDirection = p2.facing === 'right' ? 1 : -1
+          player2Animation = p2MovementDirection === facingDirection ? 'move-forward' : 'move-backward'
+        }
+      }
+      if (el2.dataset.animation !== player2Animation) el2.dataset.animation = player2Animation
       for (const [fighter, hitboxEl] of debugHitboxes) updateHitboxDebug(fighter, hitboxEl, now)
       animationId = requestAnimationFrame(update)
     }
