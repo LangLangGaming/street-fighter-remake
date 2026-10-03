@@ -346,6 +346,7 @@ export function useStreetFighterGame(refs: GameRefs) {
         scoreRef.current = { player1: 0, player2: 0 }
         setScore(scoreRef.current)
         beginRound()
+        delete justPressed.Enter
       }
       if (screenRef.current === 'playing') {
         if (lastTimestamp && !freezeTimeRef.current) {
