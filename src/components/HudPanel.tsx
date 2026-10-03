@@ -6,8 +6,8 @@ type HudPanelProps = {
   sideClassName?: string
   moves: Array<{
     key: string
-    asset: string
     label: string
+    name: string
   }>
   controls: string
   isPlayerOne?: boolean
@@ -24,7 +24,7 @@ export function HudPanel({ title, healthRef, sideClassName, moves, controls, isP
         {moves.map((move) => (
           <span key={move.key} className="mv">
             {move.label && <b>{move.label}</b>}
-            <img src={move.asset} alt={move.key} />
+            <span>{move.name}</span>
           </span>
         ))}
       </div>

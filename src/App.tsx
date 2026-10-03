@@ -2,9 +2,6 @@ import { useRef } from 'react'
 import { FighterSprite } from './components/FighterSprite'
 import { HudPanel } from './components/HudPanel'
 import { TitleScreen } from './components/TitleScreen'
-import move1 from './assets/move1.png'
-import move2 from './assets/move2.png'
-import move3 from './assets/move3.png'
 import titleBackground from './assets/title-bg.png'
 import { PLAYER_1_SIZE, PLAYER_2_SIZE } from './game/config'
 import { KEN_ANIMATIONS } from './game/kenAnimations'
@@ -25,12 +22,14 @@ function App() {
     showHitboxes,
     showDebugMenu,
     freezeTime,
+    musicPaused,
     score,
     timeLeft,
     screen,
     toggleHitboxes,
     toggleDebugMenu,
     toggleFreezeTime,
+    toggleMusic,
     startMatch,
     startNextRound,
     returnHome,
@@ -55,9 +54,9 @@ function App() {
           healthRef={hp1Ref}
           isPlayerOne
           moves={[
-            { key: 'move1', asset: move1, label: 'F' },
-            { key: 'move2', asset: move2, label: 'G' },
-            { key: 'move3', asset: move3, label: 'H' },
+            { key: 'move1', label: 'F', name: 'Jab' },
+            { key: 'move2', label: 'G', name: 'Kick' },
+            { key: 'move3', label: 'H', name: 'Hadouken' },
           ]}
           controls="A / D move &middot; W or S jump"
         />
@@ -67,9 +66,9 @@ function App() {
           healthRef={hp2Ref}
           sideClassName="right"
           moves={[
-            { key: 'move1', asset: move1, label: '/' },
-            { key: 'move2', asset: move2, label: "'" },
-            { key: 'move3', asset: move3, label: '&crarr;' },
+            { key: 'move1', label: '/', name: 'Jab' },
+            { key: 'move2', label: "'", name: 'Kick' },
+            { key: 'move3', label: 'Enter', name: 'Shoryuken' },
           ]}
           controls="&larr; / &rarr; move &middot; &uarr; or &darr; jump"
         />
@@ -84,8 +83,8 @@ function App() {
         <div className={`round-timer${timeLeft <= 10 ? ' urgent' : ''}`}>{String(Math.floor(timeLeft / 60)).padStart(2, '0')}:{String(timeLeft % 60).padStart(2, '0')}</div>
       </div>
 
-      <FighterSprite fighterRef={p1Ref} id="p1" animations={RYU_ANIMATIONS} {...PLAYER_1_SIZE} facing="right" movePop={move1} />
-      <FighterSprite fighterRef={p2Ref} id="p2" animations={KEN_ANIMATIONS} {...PLAYER_2_SIZE} facing="left" movePop={move1} />
+      <FighterSprite fighterRef={p1Ref} id="p1" animations={RYU_ANIMATIONS} {...PLAYER_1_SIZE} facing="right" />
+      <FighterSprite fighterRef={p2Ref} id="p2" animations={KEN_ANIMATIONS} {...PLAYER_2_SIZE} facing="left" />
       <div ref={p1HitboxRef} className="debug-hitbox" aria-hidden="true" />
       <div ref={p2HitboxRef} className="debug-hitbox" aria-hidden="true" />
 
@@ -97,6 +96,7 @@ function App() {
           <strong>DEBUG OPTIONS</strong>
           <label><input type="checkbox" checked={showHitboxes} onChange={toggleHitboxes} /> Show hitboxes <kbd>B</kbd></label>
           <label><input type="checkbox" checked={freezeTime} onChange={toggleFreezeTime} /> Freeze timer</label>
+          <label><input type="checkbox" checked={musicPaused} onChange={toggleMusic} /> Pause music</label>
         </div>
       )}
 

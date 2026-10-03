@@ -1,7 +1,7 @@
 import idle from '../assets/ryu_idle.png'
 import move1 from '../assets/ryu_move1.png'
 import move2 from '../assets/ryu_move2.png'
-import move3 from '../assets/ryu_move3.png'
+import hadouken from '../assets/ryu_hadouken.png'
 import moveBackward from '../assets/ryu_movebackwards.png'
 import moveForward from '../assets/ryu_moveforwards.png'
 import turn from '../assets/ryu_turn.png'
@@ -18,6 +18,12 @@ export type SpriteAnimation = {
   frames: SpriteFrame[]
   fps: number
   loop: boolean
+  projectile?: {
+    frames: SpriteFrame[]
+    distance: number
+    fps: number
+    spawnOffset: number
+  }
 }
 
 export const RYU_ANIMATIONS = {
@@ -39,18 +45,40 @@ export const RYU_ANIMATIONS = {
   'move1-attack': { src: move1, frames: [
     { x: 0, y: 0, width: 56, height: 93 },
     { x: 59, y: 0, width: 65, height: 93 },
-    { x: 135, y: 0, width: 66, height: 93 },
-  ], fps: 12, loop: false },
+    { x: 135, y: 0, width: 105, height: 93 },
+  ], fps: 30, loop: false },
   'move2-attack': { src: move2, frames: [
     { x: 0, y: 0, width: 66, height: 113 },
     { x: 66, y: 0, width: 86, height: 113 },
     { x: 153, y: 0, width: 84, height: 113 },
-  ], fps: 9, loop: false },
-  'move3-attack': { src: move3, frames: [
-    { x: 0, y: 0, width: 60, height: 94 },
-    { x: 60, y: 0, width: 64, height: 94 },
-    { x: 124, y: 0, width: 114, height: 94 },
-  ], fps: 7, loop: false },
+  ], fps: 30, loop: false },
+  'move3-attack': {
+    src: hadouken,
+    frames: [
+      { x: 34, y: 0, width: 74, height: 90 },
+      { x: 135, y: 0, width: 85, height: 90 },
+      { x: 244, y: 0, width: 90, height: 90 },
+      { x: 357, y: 0, width: 106, height: 90 },
+    ],
+    fps: 30,
+    loop: false,
+    projectile: {
+      frames: [
+        { x: 493, y: 0, width: 43, height: 90 },
+        { x: 550, y: 0, width: 56, height: 90 },
+        { x: 493, y: 0, width: 43, height: 90 },
+        { x: 550, y: 0, width: 56, height: 90 },
+        { x: 493, y: 0, width: 43, height: 90 },
+        { x: 550, y: 0, width: 56, height: 90 },
+        { x: 614, y: 0, width: 26, height: 90 },
+        { x: 652, y: 0, width: 15, height: 90 },
+        { x: 677, y: 0, width: 27, height: 90 },
+      ],
+      distance: 210,
+      fps: 12,
+      spawnOffset: 76,
+    },
+  },
   'turn-to-left': { src: turn, frames: [
     { x: 109, y: 0, width: 54, height: 96 }, { x: 54, y: 0, width: 55, height: 96 },
     { x: 0, y: 0, width: 54, height: 96 },

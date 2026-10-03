@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
-import { FLOOR_HEIGHT, MAX_HEALTH, MOVE_IMAGES, MOVES, PLAYER_1_SIZE, PLAYER_1_SKILL_REACH_BONUS, PLAYER_2_SIZE } from '../game/config'
+import { FLOOR_HEIGHT, KEN_SHORYUKEN_DURATION_MS, MAX_HEALTH, MOVES, PLAYER_1_MAX_SPRITE_WIDTH, PLAYER_1_SIZE, PLAYER_2_MAX_SPRITE_WIDTH, PLAYER_2_SIZE, RYU_HADOUKEN_DURATION_MS, RYU_HADOUKEN_REACH, SKILL_REACH_BONUS } from '../game/config'
+import { pauseBackgroundMusic, playSoundEffect, startBackgroundMusic } from '../game/audio'
 import type { Fighter } from '../game/types'
 
 type GameRefs = {
@@ -27,6 +28,7 @@ export function useStreetFighterGame(refs: GameRefs) {
   const [showHitboxes, setShowHitboxes] = useState(false)
   const [showDebugMenu, setShowDebugMenu] = useState(false)
   const [freezeTime, setFreezeTime] = useState(false)
+  const [musicPaused, setMusicPaused] = useState(false)
   const [score, setScore] = useState<Score>({ player1: 0, player2: 0 })
   const [timeLeft, setTimeLeft] = useState(ROUND_DURATION_SECONDS)
   const [screen, setScreen] = useState<GameScreen>('title')
@@ -45,9 +47,21 @@ export function useStreetFighterGame(refs: GameRefs) {
     freezeTimeRef.current = !freezeTimeRef.current
     setFreezeTime(freezeTimeRef.current)
   }, [])
-  const startMatch = useCallback(() => { actionRef.current = 'start' }, [])
+  const toggleMusic = useCallback(() => {
+    if (musicPaused) startBackgroundMusic()
+    else pauseBackgroundMusic()
+    setMusicPaused(!musicPaused)
+  }, [musicPaused])
+  const startMatch = useCallback(() => {
+    actionRef.current = 'start'
+    playSoundEffect('fight')
+  }, [])
   const startNextRound = useCallback(() => { actionRef.current = 'next' }, [])
   const returnHome = useCallback(() => { actionRef.current = 'home' }, [])
+
+  useEffect(() => {
+    startBackgroundMusic()
+  }, [])
 
   // The game loop deliberately performs imperative DOM updates inside this effect.
   // eslint-disable-next-line react-hooks/immutability
@@ -135,13 +149,13 @@ export function useStreetFighterGame(refs: GameRefs) {
       drawStage()
     }
 
-    const makeFighter = (el: HTMLDivElement, hpEl: HTMLDivElement, x: number, name: string, fighterWidth: number, fighterHeight: number): Fighter => ({
-      el, hpEl, name, width: fighterWidth, height: fighterHeight, x, y: 0, vy: 0, onGround: true,
+    const makeFighter = (el: HTMLDivElement, hpEl: HTMLDivElement, x: number, name: string, fighterWidth: number, fighterHeight: number, visualWidth: number): Fighter => ({
+      el, hpEl, name, width: fighterWidth, height: fighterHeight, visualWidth, x, y: 0, vy: 0, onGround: true,
       facing: x < 300 ? 'right' : 'left', health: MAX_HEALTH, attacking: false, activeMove: null,
       attackStart: 0, hasHit: false, cooldownUntil: 0, hitFlashUntil: 0,
     })
-    const p1 = makeFighter(el1, hp1El, 140, 'PLAYER 1', PLAYER_1_SIZE.width, PLAYER_1_SIZE.height)
-    const p2 = makeFighter(el2, hp2El, 500, 'PLAYER 2', PLAYER_2_SIZE.width, PLAYER_2_SIZE.height)
+    const p1 = makeFighter(el1, hp1El, 140, 'PLAYER 1', PLAYER_1_SIZE.width, PLAYER_1_SIZE.height, PLAYER_1_MAX_SPRITE_WIDTH)
+    const p2 = makeFighter(el2, hp2El, 500, 'PLAYER 2', PLAYER_2_SIZE.width, PLAYER_2_SIZE.height, PLAYER_2_MAX_SPRITE_WIDTH)
     const debugHitboxes: Array<[Fighter, HTMLDivElement | null]> = [[p1, refs.p1HitboxRef.current], [p2, refs.p2HitboxRef.current]]
     // eslint-disable-next-line react-hooks/immutability
     el1.dataset.animation = 'idle'
@@ -157,11 +171,21 @@ export function useStreetFighterGame(refs: GameRefs) {
     let lastTimestamp = 0
     let shownSeconds = ROUND_DURATION_SECONDS
 
-    const clampX = (fighter: Fighter, x: number) => Math.max(0, Math.min(width - fighter.width, x))
+    const clampX = (fighter: Fighter, x: number) => {
+      const spritePadding = Math.max(0, (fighter.visualWidth - fighter.width) / 2)
+      const availablePadding = Math.max(0, (width - fighter.width) / 2)
+      const padding = Math.min(spritePadding, availablePadding)
+      return Math.max(padding, Math.min(width - fighter.width - padding, x))
+    }
     const bodyRect = (fighter: Fighter) => ({ left: fighter.x, right: fighter.x + fighter.width, bottom: fighter.y, top: fighter.y + fighter.height })
     const hitboxRect = (fighter: Fighter, move: (typeof MOVES)[keyof typeof MOVES]) => {
       const body = bodyRect(fighter)
-      const reach = move.reach + (fighter === p1 ? PLAYER_1_SKILL_REACH_BONUS : 0)
+      if (fighter === p1 && fighter.activeMove === 'move3') {
+        return fighter.facing === 'right'
+          ? { left: body.right, right: body.right + RYU_HADOUKEN_REACH, bottom: body.bottom + 16, top: body.top - 8 }
+          : { left: body.left - RYU_HADOUKEN_REACH, right: body.left, bottom: body.bottom + 16, top: body.top - 8 }
+      }
+      const reach = move.reach + SKILL_REACH_BONUS
       return fighter.facing === 'right'
         ? { left: body.right, right: body.right + reach, bottom: body.bottom, top: body.top }
         : { left: body.left - reach, right: body.left, bottom: body.bottom, top: body.top }
@@ -172,14 +196,6 @@ export function useStreetFighterGame(refs: GameRefs) {
       arena.classList.remove('shake')
       void arena.offsetWidth
       arena.classList.add('shake')
-    }
-    const showMovePop = (fighter: Fighter, moveKey: keyof typeof MOVE_IMAGES) => {
-      const pop = fighter.el.querySelector<HTMLImageElement>('.move-pop')
-      if (!pop) return
-      pop.src = MOVE_IMAGES[moveKey]
-      pop.classList.remove('show')
-      void pop.offsetWidth
-      pop.classList.add('show')
     }
     const resetFighters = () => {
       for (const fighter of [p1, p2]) {
@@ -241,7 +257,10 @@ export function useStreetFighterGame(refs: GameRefs) {
       }
       target.hpEl.style.width = `${(target.health / MAX_HEALTH) * 100}%`
       screenShake()
-      if (target.health <= 0) finishRound(attacker)
+      if (target.health <= 0) {
+        playSoundEffect(target === p1 ? 'ryuDeath' : 'kenDeath')
+        finishRound(attacker)
+      }
     }
     const tryJump = (fighter: Fighter) => {
       if (!fighter.onGround) return
@@ -255,13 +274,27 @@ export function useStreetFighterGame(refs: GameRefs) {
       fighter.attackStart = now
       fighter.hasHit = false
       fighter.cooldownUntil = now + MOVES[moveKey].cooldown
-      showMovePop(fighter, moveKey)
+      if (fighter === p2 && moveKey === 'move3') {
+        playSoundEffect('shoryuken')
+      } else if (fighter === p1 && moveKey === 'move3') {
+        playSoundEffect('hadouken')
+      } else if (moveKey === 'move1' || moveKey === 'move2') {
+        const soundId = fighter === p1
+          ? moveKey === 'move1' ? 'ryuMove1' : 'ryuMove2'
+          : moveKey === 'move1' ? 'kenMove1' : 'kenMove2'
+        playSoundEffect(soundId)
+      }
     }
     const updateAttack = (attacker: Fighter, target: Fighter, now: number) => {
       if (!attacker.attacking || !attacker.activeMove) return
       const move = MOVES[attacker.activeMove]
       const elapsed = now - attacker.attackStart
-      if (elapsed >= move.duration) {
+      const duration = attacker === p1 && attacker.activeMove === 'move3'
+        ? RYU_HADOUKEN_DURATION_MS
+        : attacker === p2 && attacker.activeMove === 'move3'
+          ? KEN_SHORYUKEN_DURATION_MS
+        : move.duration
+      if (elapsed >= duration) {
         attacker.attacking = false
         return
       }
@@ -408,6 +441,7 @@ export function useStreetFighterGame(refs: GameRefs) {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!keys[event.code]) justPressed[event.code] = true
       keys[event.code] = true
+      if (event.code === 'Enter' && screenRef.current === 'title' && !event.repeat) playSoundEffect('fight')
       if (['ArrowUp', 'ArrowDown', 'KeyW', 'KeyS', 'Slash', 'Quote', 'Enter'].includes(event.code)) event.preventDefault()
       if (event.code === 'KeyB' && !event.repeat) toggleHitboxes()
     }
@@ -440,12 +474,14 @@ export function useStreetFighterGame(refs: GameRefs) {
     showHitboxes,
     showDebugMenu,
     freezeTime,
+    musicPaused,
     score,
     timeLeft,
     screen,
     toggleHitboxes,
     toggleDebugMenu,
     toggleFreezeTime,
+    toggleMusic,
     startMatch,
     startNextRound,
     returnHome,

@@ -106,7 +106,6 @@ html,body{
   padding:3px 6px;
   font-size:11px;
 }
-.moves-mini img{ width:16px; height:16px; image-rendering:pixelated; }
 .moves-mini b{ opacity:.8; font-weight:600; }
 
 .fighter{
@@ -139,44 +138,8 @@ html,body{
   filter:brightness(1.15);
 }
 
-.fighter::after{
-  content:'';
-  position:absolute;
-  top:30px;
-  width:0;
-  height:14px;
-  background:rgba(255,255,255,.95);
-  border-radius:4px;
-  transition:width .08s ease-out;
-}
-.fighter.facing-right::after{ left:100%; }
-.fighter.facing-left::after{ right:100%; }
-.fighter.attacking.facing-right::after{ width:26px; }
-.fighter.attacking.facing-left::after{ width:26px; }
-
 .fighter.hit{
   filter:brightness(2.2) saturate(0.4);
-}
-
-.move-pop{
-  position:absolute;
-  top:-30px;
-  left:50%;
-  width:22px;
-  height:22px;
-  transform:translate(-50%, 4px);
-  opacity:0;
-  image-rendering:pixelated;
-  pointer-events:none;
-}
-.move-pop.show{
-  animation: pop-up .5s ease-out forwards;
-}
-@keyframes pop-up{
-  0%{ opacity:0; transform:translate(-50%, 4px) scale(.7); }
-  25%{ opacity:1; transform:translate(-50%, -6px) scale(1.1); }
-  75%{ opacity:1; transform:translate(-50%, -14px) scale(1); }
-  100%{ opacity:0; transform:translate(-50%, -22px) scale(.9); }
 }
 
 #banner{
@@ -273,7 +236,6 @@ html,body{
   opacity:.85;
   margin-bottom:6px;
 }
-.legend-row img{ width:20px; height:20px; image-rendering:pixelated; }
 .start-prompt{
   font-size:14px;
   letter-spacing:.08em;
@@ -320,6 +282,14 @@ html,body{
   left:50%;
   max-width:none;
   image-rendering:pixelated;
+}
+.fighter canvas.projectile-sprite{
+  position:absolute;
+  bottom:0;
+  z-index:2;
+  max-width:none;
+  image-rendering:pixelated;
+  pointer-events:none;
 }
 .fighter .face{ display:none; }
 .debug-hitboxes .fighter{ outline:2px dashed rgba(255,255,255,.9); }

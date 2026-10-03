@@ -6,6 +6,7 @@ export type Fighter = {
   name: string
   width: number
   height: number
+  visualWidth: number
   x: number
   y: number
   vy: number
